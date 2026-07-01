@@ -1,0 +1,14 @@
+# Python
+__pycache__/
+.venv/
+.env
+
+# MacOS
+.DS_Store
+
+# Local System Architecture
+logs/
+state/
+
+# The generated plist files (we only track the templates!)
+*.plist
