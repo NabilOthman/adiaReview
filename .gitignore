@@ -12,3 +12,5 @@ state/
 
 # The generated plist files (we only track the templates!)
 *.plist
+
+*_completed_*
