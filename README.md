@@ -11,6 +11,13 @@ Instead of manually writing flashcards, you simply take notes in Notion. Every m
 * **Unified Logging:** A single chronologically unified `system.log` tracks both OS-level network polling and Python-level API execution.
 
 ---
+## Features In Development (soon)
+* **Multi-LLM support**
+* **More detailed feedback reports**
+
+
+
+---
 
 ## 🛠 Prerequisites
 * A Mac running macOS.
