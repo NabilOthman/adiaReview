@@ -20,6 +20,48 @@ Instead of manually writing flashcards, you simply take notes in Notion. Every m
 
 ---
 
+## 🗄️ Notion Setup Guide
+
+Because AdiaReview uses Notion as its database, you need to set up two specific tables and an API key. 
+
+### Part 1: Get Your API Key
+1. Go to [Notion Integrations](https://www.notion.so/my-integrations).
+2. Click **New integration**.
+3. Name it "AdiaReview" and select your workspace.
+4. Click **Submit**, then copy the **Internal Integration Secret**. This is your `NOTION_TOKEN`.
+
+### Part 2: Build the Source Database (Your Notes)
+Create a new full-page Table in Notion. This is where you will take your class/engineering notes. You must add these exact properties (case-sensitive):
+* **Name** *(Title property)*: The title of your note.
+* **Review** *(Select property)*: Add three options: `Yes`, `No`, and `Done`.
+* **Concepts** *(Multi-select property)*: Leave this empty. The AI will populate it.
+* **Priority** *(Select property)*: Add three options: `High`, `Standard`, and `Low`.
+
+### Part 3: Build the Tracker Database (The SM-2 Engine)
+Create a second full-page Table. This is where the AI stores the spaced-repetition data. You must add these exact properties (case-sensitive):
+* **Concept** *(Title property)*
+* **Knowledge Profile** *(Text property)*
+* **Priority** *(Select property)*
+* **Repetitions** *(Number property)*
+* **Ease Factor** *(Number property)*
+* **Interval** *(Number property)*
+* **Next Review** *(Date property)*
+* **Last Score** *(Number property)*
+
+### Part 4: Connect the Brain
+By default, your API key cannot see your databases. You must explicitly invite the integration to both tables:
+1. Open your Source Database in Notion.
+2. Click the **`...`** menu in the top right corner.
+3. Click **Add connections** and search for "AdiaReview" (or whatever you named your integration in Part 1). 
+4. Repeat this exact process for your Tracker Database.
+
+### Part 5: Get Your Database IDs
+Open Notion in your web browser (not the desktop app). Navigate to your Source Database. Look at the URL:
+`https://www.notion.so/workspace/YOUR_DATABASE_ID?v=...`
+Copy the 32-character string between the last `/` and the `?`. This is your `SOURCE_DB_ID`. Do the same for your Tracker Database to get your `TRACKER_DB_ID`.
+
+---
+
 ## 🚀 Installation Guide
 
 ### 1. Clone the Repository
