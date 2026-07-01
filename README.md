@@ -110,6 +110,18 @@ chmod +x automation/*.sh
 ./automation/deploy_jobs.sh
 `
 
+### 6. Grant macOS Permissions (Crucial)
+Apple's security system (TCC) prevents background scripts from modifying files in your `Desktop` or `Documents` folders. Since `launchd` runs in the background, you must explicitly give it permission to create your Daily Review file.
+
+1. Open **System Settings** on your Mac.
+2. Navigate to **Privacy & Security** > **Full Disk Access**.
+3. Click the **`+`** button at the bottom of the list (authenticate if needed).
+4. Press **`Cmd + Shift + G`** to open the path search bar.
+5. Type `/bin/sh` and hit Enter, then click **Open**.
+6. Repeat steps 3-5, but type `/bin/bash` this time.
+7. Verify that the toggles next to `sh` and `bash` are turned **ON**.
+
+
 **You are done! The system is now live.**
 
 ---

@@ -6,6 +6,10 @@
 PROJECT_DIR=$(cd "$(dirname "$0")/.." && pwd)
 PLIST_DIR="$HOME/Library/LaunchAgents"
 
+# Ensure required directories exist
+mkdir -p "$PROJECT_DIR/logs"
+mkdir -p "$PROJECT_DIR/state"
+
 # Read config file
 source "$PROJECT_DIR/config.txt"
 
