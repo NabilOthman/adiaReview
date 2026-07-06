@@ -1,7 +1,6 @@
 import warnings
 warnings.filterwarnings("ignore", category=UserWarning, module="urllib3")
 
-
 import os
 import logging
 import sys
@@ -52,6 +51,7 @@ notion_headers = {
 class GradingResult(BaseModel):
     score: int
     feedback: str
+    ideal_answer: str # Added field for the correct answer
 
 def grade_answer(question, reference_answer, user_answer):
     """Uses Claude 4.5 Haiku to critically evaluate the student's answer."""
@@ -68,6 +68,7 @@ def grade_answer(question, reference_answer, user_answer):
        3 = Partial conceptual understanding but missed a core mechanical step or coupling phase.
        5 = Flawless conceptual grasp of the underlying engineering physics.
     2. Provide a sharp, 1-sentence feedback note correcting any technical flaws or validating the logic.
+    3. Provide an 'ideal_answer' that is a direct, accurate, and concise response to the original question representing what a flawless 5/5 answer looks like.
     """
     
     response = anthropic_client.messages.create(
@@ -244,12 +245,14 @@ def process_daily_review_file():
                 "priority": priority
             }
             
-            # Add evaluation data directly inside the archived markdown block
+            # Cleanly format the archived block for readability, incorporating the ideal_answer
             graded_block = (
-                f"{block}\n"
-                f"<!-- GRADED_ON: {datetime.now().date().isoformat()} -->\n"
-                f"<!-- ASSIGNED_SCORE: {grade.score} -->\n"
-                f"**System Feedback:** *{grade.feedback}*\n"
+                f"**Concept:** {concept_name}\n"
+                f"**Q:** {question}\n"
+                f"**Your Answer:** {user_answer}\n\n"
+                f"**Score:** {grade.score}/5\n"
+                f"**Feedback:** {grade.feedback}\n"
+                f"**Ideal Answer:** {grade.ideal_answer}\n"
             )
             archived_blocks.append(graded_block)
             processed_count += 1
@@ -263,7 +266,7 @@ def process_daily_review_file():
         # Append graded questions to Archive
         with open(archive_path, "a", encoding="utf-8") as arch_file:
             arch_file.write(f"\n\n## REVIEW SESSION: {datetime.now().date().isoformat()}\n")
-            arch_file.write("\n---\n".join(archived_blocks)) # FIXED TYPO HERE
+            arch_file.write("\n---\n".join(archived_blocks))
             
         logger.info(f"\nSuccessfully archived {processed_count} graded items.")
         
