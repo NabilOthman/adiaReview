@@ -12,8 +12,9 @@ Instead of manually writing flashcards, you simply take notes in Notion. Every m
 
 ---
 ## ⚙️ Features In Development
-* **Multi-LLM support**
 * **More detailed feedback reports**
+* **Multi-LLM support**
+* **Multi-OS support**
 
 
 
