@@ -1,2 +1,0 @@
-If you want to force run the morning or evening script, run this command from project root:
-launchctl start com.adiareview.system.<morning/evening>
