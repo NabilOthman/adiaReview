@@ -72,7 +72,7 @@ def get_due_concepts():
     }
     
     url = f"https://api.notion.com/v1/databases/{TRACKER_DB_ID}/query"
-    res = requests.post(url, headers=notion_headers, json=payload)
+    res = requests.post(url, headers=notion_headers, json=payload, timeout=10)
     
     if res.status_code != 200:
         print(f"Failed to query Tracker DB: {res.text}")

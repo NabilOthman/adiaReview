@@ -124,7 +124,7 @@ def calculate_sm2(score, repetitions, ease_factor, interval, priority="Standard"
 def get_tracker_entry(concept_name):
     url = f"https://api.notion.com/v1/databases/{TRACKER_DB_ID}/query"
     payload = {"filter": {"property": "Concept", "title": {"equals": concept_name}}}
-    response = requests.post(url, headers=notion_headers, json=payload)
+    response = requests.post(url, headers=notion_headers, json=payload, timeout=10)
     if response.status_code == 200:
         results = response.json().get("results", [])
         if results:

@@ -70,7 +70,7 @@ class RetrievalPayload(BaseModel):
 def get_triggered_review_pages():
     payload = {"filter": {"property": "Review", "select": {"equals": "Yes"}}}
     url = f"https://api.notion.com/v1/databases/{SOURCE_DB_ID}/query"
-    response = requests.post(url, headers=notion_headers, json=payload)
+    response = requests.post(url, headers=notion_headers, json=payload, timeout=10)
     return response.json().get('results', []) if response.status_code == 200 else []
 
 def finalize_source_note(page_id, existing_concepts, new_concepts):
@@ -94,7 +94,7 @@ def finalize_source_note(page_id, existing_concepts, new_concepts):
     res = requests.patch(url, headers=notion_headers, json=payload)
     
     if res.status_code == 200:
-        logger.info(f" -> SUCCESSFULLY synced Notion: Added {len(new_concepts)} new tags & reset Review to 'No'.")
+        logger.info(f" -> SUCCESSFULLY synced Notion: Added {len(new_concepts)} new tags & reset Review to 'Done'.")
     else:
         logger.error(f" -> FAILED to sync Notion state. Code: {res.status_code}, Error: {res.text}")
 
