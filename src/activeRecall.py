@@ -1,7 +1,6 @@
 import warnings
 warnings.filterwarnings("ignore", category=UserWarning, module="urllib3")
 
-
 import os
 import logging
 import sys
@@ -56,10 +55,33 @@ class RetrievalPayload(BaseModel):
     questions: list[QuestionItem]
 
 
+# --- Read-Before-Write State Check ---
+def get_existing_concepts_on_desktop():
+    """Reads the current Daily_Review.md and returns a set of concept names already present."""
+    desktop_path = os.path.expanduser("~/Desktop/Daily_Review.md")
+    
+    if not os.path.exists(desktop_path):
+        return set()
+        
+    existing_concepts = set()
+    try:
+        with open(desktop_path, "r", encoding="utf-8") as file:
+            content = file.read()
+            
+        # Parse out the hidden metadata tags to find what's already waiting for the user
+        for line in content.split("\n"):
+            if "<!-- CONCEPT_NAME:" in line:
+                concept_name = line.split("CONCEPT_NAME:")[1].split("-->")[0].strip()
+                existing_concepts.add(concept_name)
+    except Exception as e:
+        logger.error(f"Error reading desktop file for skip-list: {e}")
+        
+    return existing_concepts
+
+
 # --- Notion Data Layer ---
 def get_due_concepts():
     """Finds concepts in the Tracker DB where 'Next Review' is on or before today."""
-    # Using local date to match your timezone study habits
     today = datetime.now().date().isoformat()
     
     payload = {
@@ -104,7 +126,7 @@ def generate_dynamic_retrieval_questions(concept_name, profile_text):
     res = anthropic_client.messages.create(
         model="claude-haiku-4-5-20251001",
         max_tokens=1500,
-        temperature=0.4, # 0.4 provides structural consistency while allowing question variation
+        temperature=0.4, 
         tools=[{"name": "record_retrieval", "description": "Save questions.", "input_schema": RetrievalPayload.model_json_schema()}],
         tool_choice={"type": "tool", "name": "record_retrieval"},
         messages=[{"role": "user", "content": prompt}]
@@ -124,7 +146,6 @@ def append_to_desktop(concept_name, questions):
     content = f"\n\n## Concept: {concept_name}\n"
     
     for item in questions:
-        # Using RETRIEVAL tag to signify this came from the active recall loop, not a new note
         content += f"<!-- PAGE_ID: RETRIEVAL -->\n"
         content += f"<!-- CONCEPT_NAME: {concept_name} -->\n"
         content += f"<!-- REF_ANSWER: {item.reference_answer} -->\n"
@@ -138,8 +159,13 @@ def append_to_desktop(concept_name, questions):
 # --- Core Orchestration ---
 def main():
     logger.info("=== ACTIVE RECALL GENERATION ===")
-    logger.info("Querying Tracker Database for due concepts...")
     
+    # 1. Build the skip-list to prevent duplicate generation
+    skip_list = get_existing_concepts_on_desktop()
+    if skip_list:
+        logger.info(f"Found {len(skip_list)} concepts currently awaiting review on Desktop.")
+
+    logger.info("Querying Tracker Database for due concepts...")
     due_concepts_rows = get_due_concepts()
     
     if not due_concepts_rows:
@@ -153,6 +179,11 @@ def main():
         concept_name = "".join([t.get("plain_text", "") for t in title_array])
         
         if not concept_name:
+            continue
+            
+        # 2. Check the skip-list before hitting the API
+        if concept_name in skip_list:
+            logger.info(f" -> Skipping '{concept_name}': Already on Desktop awaiting review.")
             continue
             
         logger.info(f"Generating dynamic recall questions for: '{concept_name}'...")
