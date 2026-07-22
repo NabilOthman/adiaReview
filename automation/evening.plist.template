@@ -6,8 +6,6 @@
     <string>{{BUNDLE_ID}}.evening</string>
     <key>ProgramArguments</key>
     <array>
-        <string>/bin/sh</string>
-        <string>-c</string>
         <string>{{PROJECT_DIR}}/automation/evening_wrapper.sh</string>
     </array>
     <key>StartCalendarInterval</key>
