@@ -155,6 +155,7 @@ def update_tracker_entry(page_id, score, reps, ef, interval, next_review_date):
     requests.patch(url, headers=notion_headers, json=payload)
 
 # --- Main In-Place Processing Loop ---
+# --- Main In-Place Processing Loop ---
 def process_daily_review_file():
     desktop_path = os.path.expanduser("~/Desktop/Daily_Review.md")
     # Store the archive visibly in the project folder
@@ -275,13 +276,28 @@ def process_daily_review_file():
 
     # Overwrite the Desktop file with ONLY unanswered blocks remaining
     if remaining_blocks:
+        reconstructed_content = []
+        current_heading_concept = None
+        
+        for block in remaining_blocks:
+            # Re-inject matching concept headers if we shift to a new section
+            if "CONCEPT_NAME:" in block:
+                try:
+                    concept_name = block.split("CONCEPT_NAME:")[1].split("-->")[0].strip()
+                    if concept_name != current_heading_concept:
+                        reconstructed_content.append(f"## Concept: {concept_name}\n")
+                        current_heading_concept = concept_name
+                except Exception:
+                    pass
+            
+            reconstructed_content.append(block)
+
         with open(desktop_path, "w", encoding="utf-8") as desk_file:
-            desk_file.write("\n\n---\n\n".join(remaining_blocks) + "\n\n---\n")
-        logger.warning("Unanswered questions remain in Daily_Review.md.")
+            desk_file.write("\n\n---\n\n".join(reconstructed_content) + "\n\n---\n")
+        logger.warning("Unanswered questions remain in Daily_Review.md. Headings preserved.")
     else:
         if os.path.exists(desktop_path):
             os.remove(desktop_path)
             logger.info("All questions completed. Daily_Review.md removed from Desktop.")
-
 if __name__ == "__main__":
     process_daily_review_file()
