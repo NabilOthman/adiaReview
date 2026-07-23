@@ -280,19 +280,29 @@ def process_daily_review_file():
         current_heading_concept = None
         
         for block in remaining_blocks:
-            # Re-inject matching concept headers if we shift to a new section
-            if "CONCEPT_NAME:" in block:
+            # 1. Scrub ALL existing concept headers out of the block so we can rebuild them cleanly
+            lines = [line for line in block.split('\n') if not line.strip().startswith('## Concept:')]
+            clean_block = '\n'.join(lines).strip()
+            
+            # 2. If the block was ONLY a header, it is now empty. Throw it away.
+            if not clean_block:
+                continue
+                
+            # 3. Detect the concept and glue exactly one header to the top of the block
+            if "CONCEPT_NAME:" in clean_block:
                 try:
-                    concept_name = block.split("CONCEPT_NAME:")[1].split("-->")[0].strip()
+                    concept_name = clean_block.split("CONCEPT_NAME:")[1].split("-->")[0].strip()
                     if concept_name != current_heading_concept:
-                        reconstructed_content.append(f"## Concept: {concept_name}\n")
+                        # Prepend the header directly to the question block so they stay together
+                        clean_block = f"## Concept: {concept_name}\n\n" + clean_block
                         current_heading_concept = concept_name
                 except Exception:
                     pass
             
-            reconstructed_content.append(block)
+            reconstructed_content.append(clean_block)
 
         with open(desktop_path, "w", encoding="utf-8") as desk_file:
+            # We don't need a leading --- at the very top of the file
             desk_file.write("\n\n---\n\n".join(reconstructed_content) + "\n\n---\n")
         logger.warning("Unanswered questions remain in Daily_Review.md. Headings preserved.")
     else:
