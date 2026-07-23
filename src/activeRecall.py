@@ -10,6 +10,7 @@ from dotenv import load_dotenv
 from pydantic import BaseModel
 import anthropic
 
+
 # Dynamically find the project root so it works on any computer
 PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 LOG_DIR = os.path.join(PROJECT_ROOT, "logs")
