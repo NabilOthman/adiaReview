@@ -263,13 +263,27 @@ def process_daily_review_file():
             remaining_blocks.append(block)
 
     # --- Writeback and Clean up Layer ---
+# --- Writeback and Clean up Layer ---
     if processed_count > 0:
-        # Append graded questions to Archive
-        with open(archive_path, "a", encoding="utf-8") as arch_file:
-            arch_file.write(f"\n\n## REVIEW SESSION: {datetime.now().date().isoformat()}\n")
-            arch_file.write("\n---\n".join(archived_blocks))
+        # Read existing archive content if it exists
+        existing_archive = ""
+        if os.path.exists(archive_path):
+            with open(archive_path, "r", encoding="utf-8") as arch_file:
+                existing_archive = arch_file.read()
+                
+        # Prepend graded questions to the top of the Archive
+        with open(archive_path, "w", encoding="utf-8") as arch_file:
+            arch_file.write(f"## REVIEW SESSION: {datetime.now().date().isoformat()}\n\n")
+            arch_file.write("\n---\n".join(archived_blocks) + "\n\n")
             
-        logger.info(f"\nSuccessfully archived {processed_count} graded items.")
+            # If there was old content, append it below the new stuff
+            if existing_archive:
+                # Add a divider between today's session and previous sessions
+                if not existing_archive.startswith("---"):
+                    arch_file.write("---\n\n")
+                arch_file.write(existing_archive)
+            
+        logger.info(f"\nSuccessfully archived {processed_count} graded items at the top of the file.")
         
         # Tell macOS to pop the file open on your screen!
         os.system(f"open '{archive_path}'")
